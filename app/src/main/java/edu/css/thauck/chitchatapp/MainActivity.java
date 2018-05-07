@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
          * OnClickListener for Floating Action Button to post a new message.
          * Gets a DB reference object.
          * Combination of push and setValue methods automatically generates a new key.
-         */
+
         FloatingActionButton fab = findViewById(R.id.floatingActionButton);
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 input.setText("");
             }
         });
+        */
     }
 
     /*
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         */
     }
 
+
     /*
      * Override to handle result of the intent when a user has signed in.
      * If result code is good, user has signed in successfully.
@@ -105,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
      * @param resultCode
      * @param data
      */
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
