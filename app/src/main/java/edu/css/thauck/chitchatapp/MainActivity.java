@@ -19,13 +19,17 @@ import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
-    private FirebaseListAdapter<ChatMessage> adapter;
+    private FirebaseListAdapter<ChatMessages> adapter;
     private static final int RC_SIGN_IN = 123;
+    public static final String ChatDataTag = "ChatData";
+
+    public MainActivity() {
+    }
 
     /*
      * Checks if user is signed in. If user is, displays chat room.
@@ -50,52 +54,55 @@ public class MainActivity extends AppCompatActivity {
          * OnClickListener for Floating Action Button to post a new message.
          * Gets a DB reference object.
          * Combination of push and setValue methods automatically generates a new key.
-
+         */
         FloatingActionButton fab = findViewById(R.id.floatingActionButton);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EditText input = findViewById(R.id.editTextInput);
+                EditText message = (EditText)findViewById(R.id.editTextMessage);
                 // Read the input field and push a new instance of ChatMessage to the Firebase database
-                FirebaseDatabase.getInstance().getReference().push().setValue(new ChatMessage(input.getText().toString(),
-                        FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
-                );
+                    // Original Code
+                    //FirebaseDatabase.getInstance().getReference().push().setValue(new ChatMessages(message.getText().toString(),
+                    // FirebaseAuth.getInstance().getCurrentUser().getDisplayName())
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference myDbRef;
+                myDbRef = database.getReference(ChatDataTag);
+                String messageAuthor = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                String messageText = message.getText().toString();
+                ChatMessages msg = new ChatMessages(messageText, messageAuthor);
+                String key = myDbRef.child(ChatDataTag).push().getKey();
+                myDbRef.child(key).setValue(message);
+
                 // Clear the input
-                input.setText("");
+                message.setText("");
             }
         });
-        */
     }
 
-    /*
-     * Pulls and displays messages stored in DB in a list view.
-     * Uses FirebaseUI class called FirebaseListAdapter to do this.
-     * The adapter is an abstract class
-     */
     private void displayChatMessages() {
-        /*ListView listOfMessages = (ListView)findViewById(R.id.listViewListMessages);
+        ListView listOfMessages = (ListView)findViewById(R.id.listViewListMessages);
 
-        adapter = new FirebaseListAdapter<ChatMessage>(this, ChatMessage.class, R.layout.chat_messages, FirebaseDatabase.getInstance().getReference()) {
+        adapter = new FirebaseListAdapter<ChatMessages>(this, ChatMessages.class, R.layout.chat_messages, FirebaseDatabase.getInstance().getReference()) {
             // Method to populate the views of each list item.
             // Works similar to the ArrayAdapter class.
             @Override
-            protected void populateView(View v, ChatMessage model, int position) {
-                // Get references to the views of message.xml
-                TextView messageText = (TextView)v.findViewById(R.id.textViewMessageText);
-                TextView messageUser = (TextView)v.findViewById(R.id.textViewMessageAuthor);
-                TextView messageTime = (TextView)v.findViewById(R.id.textViewMessageTime);
-                // Set their text
+            protected void populateView(View view, ChatMessages model, int position) {
+                // Get references to the views of chat_messages.xml
+                TextView messageText = (TextView)view.findViewById(R.id.textViewMessageText);
+                TextView messageAuthor = (TextView)view.findViewById(R.id.textViewMessageAuthor);
+                TextView messageTime = (TextView)view.findViewById(R.id.textViewMessageTime);
+
+                // Set there text
                 messageText.setText(model.getMessageText());
-                messageUser.setText(model.getMessageAuthor());
+                messageAuthor.setText(model.getMessageAuthor());
+
                 // Format the date before showing it
                 messageTime.setText(DateFormat.format("MM-dd-yyyy (HH:mm:ss)", model.getMessageTime()));
             }
         };
         listOfMessages.setAdapter(adapter);
-        */
     }
-
 
     /*
      * Override to handle result of the intent when a user has signed in.
@@ -134,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
-
 
     /*
      * Method to handle click events on the menu items.
